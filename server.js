@@ -12,6 +12,9 @@ import User from "./models/User.js";
 import Message from "./models/Message.js";
 import Conversation from "./models/Conversation.js";
 import userRoutes from "./routes/userRoutes.js";
+import { parse } from "cookie";
+import { AUTH_COOKIE_NAME } from "./config/auth.js";
+import { createOriginMiddleware } from "./middleware/originMiddleware.js";
 dotenv.config({ quiet: true });
 
 const app = express();
@@ -30,16 +33,19 @@ const io = new Server(httpServer, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
 app.use(
   cors({
     origin: allowedOrigins,
+    credentials: true,
   })
 );
 
 app.use(express.json());
+app.use(createOriginMiddleware(allowedOrigins));
 
 connectDB();
 
@@ -59,27 +65,32 @@ app.get("/", (req, res) => {
 const onlineUsers = new Map();
 
 // Socket.IO connection
-io.on("connection", async (socket) => {
+io.use(async (socket, next) => {
   try {
-    const token = socket.handshake.auth.token;
+    const token = parse(socket.handshake.headers.cookie || "")[AUTH_COOKIE_NAME];
 
     if (!token) {
-      socket.disconnect();
-      return;
+      return next(new Error("Unauthorized"));
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      socket.disconnect();
-      return;
+      return next(new Error("Unauthorized"));
     }
 
+    socket.user = user;
+    next();
+  } catch (error) {
+    next(new Error("Unauthorized"));
+  }
+});
+
+io.on("connection", async (socket) => {
+  try {
+    const user = socket.user;
     const userId = user._id.toString();
 
     // Store socket information

@@ -1,20 +1,17 @@
 import jwt from "jsonwebtoken";
+import { parse } from "cookie";
 import User from "../models/User.js";
+import { AUTH_COOKIE_NAME } from "../config/auth.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Get Authorization header
-    const authHeader = req.headers.authorization;
+    const token = parse(req.headers.cookie || "")[AUTH_COOKIE_NAME];
 
-    // Check if token exists
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         message: "No token provided",
       });
     }
-
-    // Extract token
-    const token = authHeader.split(" ")[1];
 
     // Verify token
     const decoded = jwt.verify(
