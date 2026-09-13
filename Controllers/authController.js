@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { serialize } from "cookie";
+import { stringifySetCookie } from "cookie";
 import User from "../models/User.js";
 import {
   AUTH_COOKIE_NAME,
@@ -99,7 +99,11 @@ export const loginUser = async (req, res) => {
     // 5. Send response
     res.setHeader(
       "Set-Cookie",
-      serialize(AUTH_COOKIE_NAME, token, getAuthCookieOptions()),
+      stringifySetCookie({
+        name: AUTH_COOKIE_NAME,
+        value: token,
+        ...getAuthCookieOptions(),
+      }),
     );
 
     res.status(200).json({
@@ -123,7 +127,9 @@ export const loginUser = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.setHeader(
     "Set-Cookie",
-    serialize(AUTH_COOKIE_NAME, "", {
+    stringifySetCookie({
+      name: AUTH_COOKIE_NAME,
+      value: "",
       ...getAuthCookieOptions(),
       maxAge: 0,
     }),

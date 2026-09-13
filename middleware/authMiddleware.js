@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import User from "../models/User.js";
 import { AUTH_COOKIE_NAME } from "../config/auth.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = parse(req.headers.cookie || "")[AUTH_COOKIE_NAME];
+    const token = parseCookie(req.headers.cookie || "")[AUTH_COOKIE_NAME];
 
     if (!token) {
       return res.status(401).json({

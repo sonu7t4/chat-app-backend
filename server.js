@@ -12,9 +12,10 @@ import User from "./models/User.js";
 import Message from "./models/Message.js";
 import Conversation from "./models/Conversation.js";
 import userRoutes from "./routes/userRoutes.js";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import { AUTH_COOKIE_NAME } from "./config/auth.js";
 import { createOriginMiddleware } from "./middleware/originMiddleware.js";
+
 dotenv.config({ quiet: true });
 
 const app = express();
@@ -67,7 +68,7 @@ const onlineUsers = new Map();
 // Socket.IO connection
 io.use(async (socket, next) => {
   try {
-    const token = parse(socket.handshake.headers.cookie || "")[AUTH_COOKIE_NAME];
+    const token = parseCookie(socket.handshake.headers.cookie || "")[AUTH_COOKIE_NAME];
 
     if (!token) {
       return next(new Error("Unauthorized"));
