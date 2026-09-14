@@ -19,7 +19,7 @@ import { createOriginMiddleware } from "./middleware/originMiddleware.js";
 dotenv.config({ quiet: true });
 
 const app = express();
-const allowedOrigins = (process.env.CLIENT_URLS || "http://localhost:3000")
+const allowedOrigins = (process.env.CLIENT_URLS || "https://chat-app-frontendd-rho.vercel.app")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -30,12 +30,12 @@ app.use("/uploads", express.static("uploads"));
 const httpServer = createServer(app);
 
 // Socket.IO server
-const io = new Server(httpServer, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+const io = new Server(server, {
+    cors: {
+        origin: "https://chat-app-frontendd-rho.vercel.app",
+        methods: ["GET", "POST"],
+        credentials: true
+    }
 });
 
 app.use(
