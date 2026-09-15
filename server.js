@@ -32,11 +32,11 @@ const httpServer = createServer(app);
 
 // Socket.IO server
 const io = new Server(httpServer, {
-    cors: {
-        origin: "https://chat-app-frontendd-rho.vercel.app",
-        methods: ["GET", "POST"],
-        credentials: true
-    }
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 app.use(
