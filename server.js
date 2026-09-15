@@ -308,7 +308,6 @@ io.on("connection", async (socket) => {
         const message = await Message.findOneAndUpdate(
           {
             _id: messageId,
-            isDeleted: true,
             $or: [{ sender: userId }, { receiver: userId }],
           },
           { $addToSet: { deletedFor: userId } },
@@ -316,7 +315,7 @@ io.on("connection", async (socket) => {
         );
 
         if (!message) {
-          reply({ ok: false, message: "This deleted message cannot be removed." });
+          reply({ ok: false, message: "This message cannot be removed." });
           return;
         }
 
