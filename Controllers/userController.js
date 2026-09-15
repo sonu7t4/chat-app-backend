@@ -2,6 +2,9 @@ import User from "../models/User.js";
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
 
+const escapeRegex = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const getUsers = async (req, res) => {
   try {
     const currentUserId = req.user._id;
@@ -132,6 +135,34 @@ export const getUsers = async (req, res) => {
 
     res.status(500).json({
       message: "Server error",
+    });
+  }
+};
+
+export const searchUsers = async (req, res) => {
+  try {
+    const query = req.query.q?.trim();
+
+    if (!query) {
+      return res.status(200).json({ users: [] });
+    }
+
+    const search = new RegExp(escapeRegex(query), "i");
+
+    const users = await User.find({
+      _id: { $ne: req.user._id },
+      $or: [{ username: search }, { email: search }],
+    })
+      .select("_id username email profilePicture isOnline lastSeen")
+      .limit(20)
+      .lean();
+
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error("Search users error:", error.message);
+
+    return res.status(500).json({
+      message: "Failed to search users",
     });
   }
 };
