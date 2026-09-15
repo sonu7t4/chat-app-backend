@@ -27,10 +27,11 @@ const allowedOrigins = (process.env.CLIENT_URLS || "https://chat-app-frontendd-r
 app.use("/uploads", express.static("uploads"));
 
 // Create HTTP server
+// Create HTTP server
 const httpServer = createServer(app);
 
 // Socket.IO server
-const io = new Server(server, {
+const io = new Server(httpServer, {
     cors: {
         origin: "https://chat-app-frontendd-rho.vercel.app",
         methods: ["GET", "POST"],
