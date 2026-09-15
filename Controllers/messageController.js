@@ -81,6 +81,7 @@ export const getMessages = async (req, res) => {
           receiver: currentUserId,
         },
       ],
+      deletedFor: { $nin: [currentUserId] },
     })
       .populate("sender", "username profilePicture")
       .populate("receiver", "username profilePicture")

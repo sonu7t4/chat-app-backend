@@ -296,6 +296,40 @@ io.on("connection", async (socket) => {
       }
     });
 
+    socket.on("deleteMessageForMe", async ({ messageId }, acknowledge) => {
+      try {
+        const reply = typeof acknowledge === "function" ? acknowledge : () => {};
+
+        if (!messageId || !mongoose.Types.ObjectId.isValid(messageId)) {
+          reply({ ok: false, message: "Invalid message." });
+          return;
+        }
+
+        const message = await Message.findOneAndUpdate(
+          {
+            _id: messageId,
+            isDeleted: true,
+            $or: [{ sender: userId }, { receiver: userId }],
+          },
+          { $addToSet: { deletedFor: userId } },
+          { returnDocument: "after" },
+        );
+
+        if (!message) {
+          reply({ ok: false, message: "This deleted message cannot be removed." });
+          return;
+        }
+
+        socket.emit("messageHidden", { messageId });
+        reply({ ok: true });
+      } catch (error) {
+        if (typeof acknowledge === "function") {
+          acknowledge({ ok: false, message: "Message removal failed." });
+        }
+        console.error("Delete message for me error:", error.message);
+      }
+    });
+
     // -----------------------------
     // DISCONNECT
     // -----------------------------
