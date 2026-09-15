@@ -124,6 +124,17 @@ export const getUsers = async (req, res) => {
       }
     );
 
+    usersWithConversation.sort((firstUser, secondUser) => {
+      if (secondUser.unreadCount !== firstUser.unreadCount) {
+        return secondUser.unreadCount - firstUser.unreadCount;
+      }
+
+      return (
+        new Date(secondUser.lastMessageTime || 0).getTime() -
+        new Date(firstUser.lastMessageTime || 0).getTime()
+      );
+    });
+
     res.status(200).json({
       users: usersWithConversation,
     });
